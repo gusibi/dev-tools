@@ -1,10 +1,22 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_json_view/flutter_json_view.dart';
-import 'package:clipboard_watcher/clipboard_watcher.dart';
+// import 'package:clipboard_watcher/clipboard_watcher.dart';
+
+class CustomJsonDecoder extends Converter<String, dynamic> {
+  @override
+  dynamic convert(String input) {
+    String fixedInput = input
+        .replaceAll(r'\\', '\\')
+        .replaceAll(r'\"', '"')
+        .replaceAll(r"\'", "'");
+    return json.decode(fixedInput);
+  }
+}
 
 class JsonFormatView extends StatefulWidget {
   const JsonFormatView({Key? key}) : super(key: key);
@@ -14,25 +26,31 @@ class JsonFormatView extends StatefulWidget {
   _JsonFormatViewState createState() => _JsonFormatViewState();
 }
 
-class _JsonFormatViewState extends State<JsonFormatView>
-    with ClipboardListener {
+class _JsonFormatViewState extends State<JsonFormatView> {
   final TextEditingController _inputController = TextEditingController();
   String _formattedJson = '{}';
   bool _invalidJson = false;
 
   @override
   void initState() {
-    clipboardWatcher.addListener(this);
-    // start watch
-    clipboardWatcher.start();
     _startListeningToClipboard();
     super.initState();
   }
 
+  Future<String?> getClipBoardData() async {
+    ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+    return data?.text;
+  }
+
   void _startListeningToClipboard() async {
-    ClipboardData? newClipboardData =
-        await Clipboard.getData(Clipboard.kTextPlain);
-    _checkAndFillClipboardContent(newClipboardData?.text ?? "{}");
+    ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+    String? clipboardText = data?.text;
+    if (clipboardText != null) {
+      _checkAndFillClipboardContent(clipboardText);
+    } else {
+      // Handle the case where clipboard is empty or data is not a String
+      developer.log("get data from clipboard fail");
+    }
   }
 
   Future<void> _checkAndFillClipboardContent(String? clipboardContent) async {
@@ -48,6 +66,8 @@ class _JsonFormatViewState extends State<JsonFormatView>
         _formatJson();
       } catch (e) {
         // 如果不是有效的 JSON，不做任何操作
+        developer
+            .log("[_checkAndFillClipboardContent] try format data fail:: $e");
       }
     }
   }
@@ -57,7 +77,9 @@ class _JsonFormatViewState extends State<JsonFormatView>
       _invalidJson = false;
     });
     try {
-      final dynamic parsedJson = json.decode(_inputController.text);
+      var decoder = CustomJsonDecoder();
+      var parsedJson = decoder.convert(_inputController.text);
+      // final dynamic parsedJson = json.decode(_inputController.text);
       if (parsedJson is Map || parsedJson is List) {
         final String prettyJson =
             const JsonEncoder.withIndent('  ').convert(parsedJson);
@@ -72,6 +94,7 @@ class _JsonFormatViewState extends State<JsonFormatView>
         });
       }
     } catch (e) {
+      developer.log("[_formatJson] try format data fail:: $e");
       setState(() {
         _formattedJson = 'Invalid JSON: ${e.toString()}';
         _invalidJson = true;
@@ -170,9 +193,6 @@ class _JsonFormatViewState extends State<JsonFormatView>
   @override
   void dispose() {
     _inputController.dispose();
-    clipboardWatcher.removeListener(this);
-    // stop watch
-    clipboardWatcher.stop();
     super.dispose();
   }
 }

@@ -5,7 +5,7 @@ import 'sample_item.dart';
 import 'sample_item_details_view.dart';
 
 import '../features/json_format/json_format_view.dart';
-// import '../features/app_logo/app_logo_view.dart';
+import '../features/app_icon/app_icon_view.dart';
 
 /// Displays a list of SampleItems.
 class SampleItemListView extends StatelessWidget {
@@ -91,13 +91,13 @@ class SampleItemListView extends StatelessWidget {
                           builder: (context) => const JsonFormatView()),
                     );
                     break;
-                  // case 4:
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //         builder: (context) => IconGeneratorPage()),
-                  //   );
-                  //   break;
+                  case 4:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => IconGeneratorPage()),
+                    );
+                    break;
                   default:
                     // 如果id不匹配,可以导航到默认页面或显示错误信息
                     Navigator.restorablePushNamed(
