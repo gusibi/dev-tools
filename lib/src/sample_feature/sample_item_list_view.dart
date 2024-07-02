@@ -6,6 +6,7 @@ import 'sample_item_details_view.dart';
 
 import '../features/json_format/json_format_view.dart';
 import '../features/app_icon/app_icon_view.dart';
+import '../features/app_icon/app_icon_pro_view.dart';
 
 /// Displays a list of SampleItems.
 class SampleItemListView extends StatelessWidget {
@@ -92,6 +93,13 @@ class SampleItemListView extends StatelessWidget {
                     );
                     break;
                   case 4:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AppIconEditorPage()),
+                    );
+                    break;
+                  case 5:
                     Navigator.push(
                       context,
                       MaterialPageRoute(

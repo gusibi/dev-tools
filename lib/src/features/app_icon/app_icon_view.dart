@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_editor/image_editor.dart' hide ImageSource;
+import 'package:extended_image/extended_image.dart';
 
 class IconGeneratorPage extends StatefulWidget {
   @override
@@ -17,8 +18,6 @@ class _IconGeneratorPageState extends State<IconGeneratorPage> {
   final TextEditingController _controller = TextEditingController();
   bool _imageSelected = false;
   bool _iconsGenerated = false;
-  double _imageWidth = 0;
-  double _imageHeight = 0;
   late File _imageFile;
   final TransformationController _transformationController =
       TransformationController();
