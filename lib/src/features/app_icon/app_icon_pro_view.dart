@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:developer' as developer;
 
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,10 +21,11 @@ class AppIconEditorPage extends StatefulWidget {
 class _AppIconEditorPageState extends State<AppIconEditorPage> {
   final TextEditingController _controller = TextEditingController();
   final GlobalKey<ExtendedImageEditorState> editorKey = GlobalKey();
-
+  BoxShape? boxShape;
   bool _imageSelected = false;
   bool _iconsGenerated = false;
   bool _isRounded = false;
+  bool _isNewImageLoading = false;
   double sat = 1;
   double bright = 1;
   double con = 1;
@@ -35,6 +37,33 @@ class _AppIconEditorPageState extends State<AppIconEditorPage> {
     "assets/images/3.0x/flutter_logo.png",
     cacheRawData: true,
   );
+  @override
+  void initState() {
+    boxShape = BoxShape.rectangle;
+    super.initState();
+    _initializePreview();
+  }
+
+  void _initializePreview() async {
+    final assetImage =
+        await _getAssetImageBytes("assets/images/3.0x/flutter_logo.png");
+    if (assetImage != null) {
+      setState(() {
+        _imageSelected = true;
+        _editedImage = assetImage;
+      });
+      _updatePreviewImages();
+    }
+  }
+
+  Color editorMaskColorHandler(BuildContext context, bool pointerDown) {
+    return Colors.black.withOpacity(pointerDown ? 0.4 : 0.8);
+  }
+
+  Future<Uint8List?> _getAssetImageBytes(String assetPath) async {
+    final ByteData data = await rootBundle.load(assetPath);
+    return data.buffer.asUint8List();
+  }
 
   void _pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -46,15 +75,19 @@ class _AppIconEditorPageState extends State<AppIconEditorPage> {
     developer.log(image.path);
     provider = ExtendedFileImageProvider(File(image.path), cacheRawData: true);
     setState(() {
+      provider =
+          ExtendedFileImageProvider(File(image.path), cacheRawData: true);
       _imageSelected = true;
       _isRounded = false;
+      _previewImages = {}; // 清空之前的预览图
+      _isNewImageLoading = true; // 设置标志表示正在加载新图片
     });
-    _updatePreviewImages();
+    // await _updatePreviewImages(); // 等待预览更新完成
   }
 
   Future<void> _updatePreviewImages() async {
-    if (!_imageSelected) return;
-
+    await Future.delayed(
+        const Duration(milliseconds: 100)); //延迟执行裁剪操作; 让状态初始化完成
     final result = await crop(_isRounded);
     if (result != null) {
       setState(() {
@@ -151,12 +184,26 @@ class _AppIconEditorPageState extends State<AppIconEditorPage> {
         extendedImageEditorKey: editorKey,
         mode: ExtendedImageMode.editor,
         fit: BoxFit.contain,
+        shape: boxShape,
+        // borderRadius: BorderRadius.circular(160),
+        // clipBehavior: Clip.antiAlias,
         initEditorConfigHandler: (_) => EditorConfig(
-          maxScale: 8.0,
+          maxScale: 18.0,
           cropRectPadding: const EdgeInsets.all(20.0),
-          hitTestSize: 20.0,
+          hitTestSize: 80.0,
           cropAspectRatio: 2 / 2,
         ),
+        loadStateChanged: (ExtendedImageState state) {
+          if (state.extendedImageLoadState == LoadState.completed &&
+              _isNewImageLoading) {
+            // 图片加载完成后更新预览
+            _isNewImageLoading = false;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _updatePreviewImages();
+            });
+          }
+          return null;
+        },
       );
     }
 
@@ -222,6 +269,11 @@ class _AppIconEditorPageState extends State<AppIconEditorPage> {
                     ? () {
                         setState(() {
                           _isRounded = !_isRounded;
+                          if (_isRounded) {
+                            boxShape = BoxShape.rectangle;
+                          } else {
+                            boxShape = BoxShape.circle;
+                          }
                         });
                         _updatePreviewImages();
                       }
@@ -241,26 +293,37 @@ class _AppIconEditorPageState extends State<AppIconEditorPage> {
           // Left side - Edit area
           Expanded(
             flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                // color: Colors.grey[200],
+                // border: Border.all(color: Colors.grey[400]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // const Icon(Icons.image, size: 48, color: Colors.blue),
+                  const SizedBox(height: 16),
                   Expanded(child: buildImageEditor()),
-                  SizedBox(height: 16),
-                  ElevatedButton(
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
                     onPressed: _pickImage,
-                    child: const Text('Select Image'),
+                    icon: const Icon(Icons.add_photo_alternate),
+                    label: const Text('Select Image'),
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: _imageSelected ? _updatePreviewImages : null,
-                    child: Text('Generate Icons'),
+                    icon: const Icon(Icons.auto_awesome),
+                    label: const Text('Generate Icons'),
                   ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
                     onPressed: _previewImages.isNotEmpty ? _saveIcons : null,
-                    child: Text('Save Icons'),
+                    icon: const Icon(Icons.save),
+                    label: const Text('Save Icons'),
                   ),
                 ],
               ),
@@ -269,49 +332,58 @@ class _AppIconEditorPageState extends State<AppIconEditorPage> {
           // Right side - Preview area
           Expanded(
             flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                child: _imageSelected
-                    ? SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: _controller,
-                              decoration: InputDecoration(
-                                labelText: 'File Name',
-                                hintText: 'Enter file name (default: icon)',
-                                border: OutlineInputBorder(),
+            child: Container(
+              decoration: BoxDecoration(
+                // color: Colors.white,
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              margin: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      labelText: 'File Name',
+                      hintText: 'Enter file name (default: icon)',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.file_present),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [16, 32, 64, 128, 256, 512, 1024].map((size) {
+                          return Column(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: _previewImages.containsKey(size)
+                                    ? Image.memory(
+                                        _previewImages[size]!,
+                                        width: 100,
+                                        height: 100,
+                                      )
+                                    : const Center(child: Text('Loading...')),
                               ),
-                            ),
-                            SizedBox(height: 16),
-                            Wrap(
-                              spacing: 16,
-                              runSpacing: 16,
-                              children:
-                                  [16, 32, 64, 128, 256, 512, 1024].map((size) {
-                                return Column(
-                                  children: [
-                                    _previewImages.containsKey(size)
-                                        ? Image.memory(
-                                            _previewImages[size]!,
-                                            width: 100,
-                                            height: 100,
-                                          )
-                                        : Placeholder(
-                                            fallbackHeight: 100,
-                                            fallbackWidth: 100,
-                                            color: Colors.grey,
-                                          ),
-                                    Text('${size}px'),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Center(child: Text('No image selected')),
+                              Text('${size}px'),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
