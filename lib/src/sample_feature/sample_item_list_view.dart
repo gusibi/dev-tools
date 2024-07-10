@@ -8,7 +8,6 @@ import '../features/json_format/json_format_view.dart';
 import '../features/app_icon/app_icon_view.dart';
 import '../features/app_icon/app_icon_pro_view.dart';
 
-/// Displays a list of SampleItems.
 class SampleItemListView extends StatelessWidget {
   const SampleItemListView({
     super.key,
@@ -28,94 +27,114 @@ class SampleItemListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final category1 = items.where((item) => item.id <= 3).toList();
+    final category2 = items.where((item) => item.id > 3).toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Devoloper Utils'),
+        title: const Text('Developer Utils'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Navigate to the settings page. If the user leaves and returns
-              // to the app after it has been killed while running in the
-              // background, the navigation stack is restored.
               Navigator.restorablePushNamed(context, SettingsView.routeName);
             },
           ),
         ],
       ),
-
-      // To work with lists that may contain a large number of items, it’s best
-      // to use the ListView.builder constructor.
-      //
-      // In contrast to the default ListView constructor, which requires
-      // building all Widgets up front, the ListView.builder constructor lazily
-      // builds Widgets as they’re scrolled into view.
-      body: ListView.builder(
-        // Providing a restorationId allows the ListView to restore the
-        // scroll position when a user leaves and returns to the app after it
-        // has been killed while running in the background.
-        restorationId: 'sampleItemListView',
-        itemCount: items.length,
-        itemBuilder: (BuildContext context, int index) {
-          final item = items[index];
-
-          return ListTile(
-              title: Text(item.name),
-              leading: const CircleAvatar(
-                // Display the Flutter Logo image asset.
-                foregroundImage: AssetImage('assets/images/flutter_logo.png'),
-              ),
-              onTap: () {
-                // Navigate to the details page. If the user leaves and returns to
-                // the app after it has been killed while running in the
-                // background, the navigation stack is restored.
-                // 根据不同的item.id导航到不同的页面
-                switch (item.id) {
-                  case 1:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const JsonFormatView()),
-                    );
-                    break;
-                  case 2:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const JsonFormatView()),
-                    );
-                    break;
-                  case 3:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const JsonFormatView()),
-                    );
-                    break;
-                  case 4:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AppIconEditorPage()),
-                    );
-                    break;
-                  case 5:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => IconGeneratorPage()),
-                    );
-                    break;
-                  default:
-                    // 如果id不匹配,可以导航到默认页面或显示错误信息
-                    Navigator.restorablePushNamed(
-                      context,
-                      SampleItemDetailsView.routeName,
-                    );
-                }
-              });
-        },
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child:
+                  Text('Encode', style: Theme.of(context).textTheme.titleLarge),
+            ),
+            _buildAdaptiveGrid(context, category1),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('App Icon',
+                  style: Theme.of(context).textTheme.titleLarge),
+            ),
+            _buildAdaptiveGrid(context, category2),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildAdaptiveGrid(
+      BuildContext context, List<SampleItem> categoryItems) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double itemWidth = constraints.maxWidth / 3;
+        final double aspectRatio = 3 / 2;
+        final int crossAxisCount = 3;
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: aspectRatio,
+          children: categoryItems
+              .map((item) => _buildGridItem(context, item))
+              .toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildGridItem(BuildContext context, SampleItem item) {
+    return Card(
+      margin: EdgeInsets.all(8),
+      child: InkWell(
+        onTap: () => _navigateToItemView(context, item),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              foregroundImage: AssetImage('assets/images/flutter_logo.png'),
+            ),
+            SizedBox(height: 8),
+            Text(
+              item.name,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToItemView(BuildContext context, SampleItem item) {
+    switch (item.id) {
+      case 1:
+      case 2:
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const JsonFormatView()),
+        );
+        break;
+      case 4:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AppIconEditorPage()),
+        );
+        break;
+      case 5:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => IconGeneratorPage()),
+        );
+        break;
+      default:
+        Navigator.restorablePushNamed(
+          context,
+          SampleItemDetailsView.routeName,
+        );
+    }
   }
 }
