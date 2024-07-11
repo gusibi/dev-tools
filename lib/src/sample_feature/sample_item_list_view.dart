@@ -12,12 +12,12 @@ class SampleItemListView extends StatelessWidget {
   const SampleItemListView({
     super.key,
     this.items = const [
-      SampleItem(1, "JsonFormat"),
-      SampleItem(2, "JwtParse"),
-      SampleItem(3, "TimeUtils"),
-      SampleItem(4, "MacLogo"),
-      SampleItem(5, "iOSLogo"),
-      SampleItem(6, "AndroidLogo"),
+      SampleItem(1, "JsonFormat", icon: Icons.javascript),
+      SampleItem(2, "JwtParse", icon: Icons.token),
+      SampleItem(3, "TimeUtils", icon: Icons.timer),
+      SampleItem(4, "MacLogo", icon: Icons.apple),
+      SampleItem(5, "iOSLogo", icon: Icons.phone_iphone),
+      SampleItem(6, "AndroidLogo", icon: Icons.android),
     ],
   });
 
@@ -93,10 +93,11 @@ class SampleItemListView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
-              foregroundImage: AssetImage('assets/images/flutter_logo.png'),
+            Icon(
+              item.icon, // Use default icon if item.icon is null
+              size: 48.0, // Adjust size as needed
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               item.name,
               textAlign: TextAlign.center,

@@ -4,7 +4,7 @@ description: "A new dev tools."
 # Prevent accidental publishing to pub.dev.
 publish_to: 'none'
 
-version: 1.1.0+1
+version: 1.1.1
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -21,6 +21,10 @@ dependencies:
   extended_image: ^8.2.1
   image_editor: ^1.5.1
   oktoast: ^3.4.0
+  window_size:
+    git:
+      url: https://github.com/google/flutter-desktop-embedding.git
+      path: plugins/window_size
 
 
 dev_dependencies:
