@@ -32,13 +32,13 @@ jobs:
       
       - name: Get dependencies
         run: flutter pub get
-      
-      - name: Start build
-        run: make macapp
-      
+        
       # 新增：安装 create-dmg
       - name: Install create-dmg
         run: brew install create-dmg
+      
+      - name: Start build
+        run: make macapp
 
       - name: Start build
         run: make macapp
