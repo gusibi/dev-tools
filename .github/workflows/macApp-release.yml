@@ -40,9 +40,6 @@ jobs:
       - name: Start build
         run: make macapp
 
-      - name: Start build
-        run: make macapp
-
       # Upload generated dmg to the release.
       - name: Push to Releases
         uses: ncipollo/release-action@v1
