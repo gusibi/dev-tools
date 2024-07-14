@@ -1,0 +1,54 @@
+name: macApp Release
+
+# 1
+on:
+  # 2
+  push:
+    tags:
+      - 'v*.*.*'
+
+  # 3
+  workflow_dispatch:
+
+# 4
+jobs:
+  # 5
+  build:
+    # 6
+    runs-on: ubuntu-latest
+    # 7
+    steps:
+      # 8
+      - uses: actions/checkout@v3
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      # 9
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: "12.x"
+      # 10   
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.5'
+          channel: 'stable'
+      - run: flutter --version
+      # 12
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Start build
+        run: make macapp
+
+      # Upload generated apk to the release.
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "DEVTools.dmg"
+          tag: ${{ env.RELEASE_VERSION }}
+          token: ${{ secrets.TOKEN }}
