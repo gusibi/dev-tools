@@ -114,7 +114,6 @@ class SampleItemListView extends StatelessWidget {
 
   void _navigateToItemView(BuildContext context, SampleItem item) {
     switch (item.id) {
-      case 1:
       case 2:
         Navigator.push(
           context,
@@ -122,18 +121,19 @@ class SampleItemListView extends StatelessWidget {
         );
         break;
       case 3:
+      case 4:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => TextDiffView()),
         );
         break;
-      case 4:
+      case 6:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => AppIconEditorPage()),
         );
         break;
-      case 5:
+      case 7:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => IconGeneratorPage()),
