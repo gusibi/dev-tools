@@ -5,6 +5,7 @@ import 'sample_item.dart';
 import 'sample_item_details_view.dart';
 
 import '../features/json_format/json_format_view.dart';
+import '../features/diff/text_diff_view.dart';
 import '../features/app_icon/app_icon_view.dart';
 import '../features/app_icon/app_icon_pro_view.dart';
 
@@ -14,10 +15,12 @@ class SampleItemListView extends StatelessWidget {
     this.items = const [
       SampleItem(1, "JsonFormat", icon: Icons.javascript),
       SampleItem(2, "JwtParse", icon: Icons.token),
-      SampleItem(3, "TimeUtils", icon: Icons.timer),
-      SampleItem(4, "MacLogo", icon: Icons.apple),
-      SampleItem(5, "iOSLogo", icon: Icons.phone_iphone),
-      SampleItem(6, "AndroidLogo", icon: Icons.android),
+      SampleItem(3, "Json Diff", icon: Icons.code_off_outlined),
+      SampleItem(4, "Text Diff", icon: Icons.difference),
+      SampleItem(5, "TimeUtils", icon: Icons.timer),
+      SampleItem(6, "MacLogo", icon: Icons.apple),
+      SampleItem(7, "iOSLogo", icon: Icons.phone_iphone),
+      SampleItem(8, "AndroidLogo", icon: Icons.android),
     ],
   });
 
@@ -27,8 +30,8 @@ class SampleItemListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final category1 = items.where((item) => item.id <= 3).toList();
-    final category2 = items.where((item) => item.id > 3).toList();
+    final category1 = items.where((item) => item.id <= 5).toList();
+    final category2 = items.where((item) => item.id > 5).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -113,10 +116,15 @@ class SampleItemListView extends StatelessWidget {
     switch (item.id) {
       case 1:
       case 2:
-      case 3:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const JsonFormatView()),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => TextDiffView()),
         );
         break;
       case 4:
