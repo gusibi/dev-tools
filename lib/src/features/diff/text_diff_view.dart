@@ -20,34 +20,47 @@ class _TextDiffPageState extends State<TextDiffView> {
   }
 
   Widget _buildInputSection(String title, TextEditingController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            IconButton(
-              icon: Icon(Icons.clear),
-              onPressed: () {
-                controller.clear();
-              },
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey,
+          width: 2.0,
         ),
-        Expanded(
-          child: TextField(
-            controller: controller,
-            maxLines: null,
-            expands: true,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.all(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            color: Colors.grey[800],
+            padding: EdgeInsets.only(left: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(title,
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                TextButton(
+                  child: Text("Clear"),
+                  onPressed: () {
+                    controller.clear();
+                  },
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: TextField(
+              controller: controller,
+              maxLines: null,
+              expands: true,
+              decoration: InputDecoration(
+                // border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.all(8),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -108,26 +121,31 @@ class _TextDiffPageState extends State<TextDiffView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Text Diff Tool')),
-      body: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                    child: _buildInputSection('Original', _originalController)),
-                SizedBox(width: 16),
-                Expanded(
-                    child: _buildInputSection('Changed', _changedController)),
-              ],
+      appBar: AppBar(title: const Text('Text Diff Tool')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                      child:
+                          _buildInputSection('Original', _originalController)),
+                  SizedBox(width: 16),
+                  Expanded(
+                      child: _buildInputSection('Changed', _changedController)),
+                ],
+              ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: _calculateDiff,
-            child: Text('Compare'),
-          ),
-          Expanded(child: _buildDiffResult()),
-        ],
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _calculateDiff,
+              child: Text('Compare'),
+            ),
+            Expanded(child: _buildDiffResult()),
+          ],
+        ),
       ),
     );
   }

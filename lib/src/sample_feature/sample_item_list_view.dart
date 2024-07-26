@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../settings/settings_view.dart';
 import 'sample_item.dart';
-import 'sample_item_details_view.dart';
 
 import '../features/json_format/json_format_view.dart';
 import '../features/diff/text_diff_view.dart';
@@ -10,28 +9,74 @@ import '../features/app_icon/app_icon_view.dart';
 import '../features/app_icon/app_icon_pro_view.dart';
 
 class SampleItemListView extends StatelessWidget {
-  const SampleItemListView({
-    super.key,
-    this.items = const [
-      SampleItem(1, "JsonFormat", icon: Icons.javascript),
-      SampleItem(2, "JwtParse", icon: Icons.token),
-      SampleItem(3, "Json Diff", icon: Icons.code_off_outlined),
-      SampleItem(4, "Text Diff", icon: Icons.difference),
-      SampleItem(5, "TimeUtils", icon: Icons.timer),
-      SampleItem(6, "MacLogo", icon: Icons.apple),
-      SampleItem(7, "iOSLogo", icon: Icons.phone_iphone),
-      SampleItem(8, "AndroidLogo", icon: Icons.android),
-    ],
-  });
+  SampleItemListView({super.key}) {
+    _initializeItems();
+  }
+
+  late final Map<String, List<FeatureItem>> items;
+
+  void _initializeItems() {
+    items = {
+      "Encode": [
+        FeatureItem(
+          1,
+          "JsonFormat",
+          Icons.javascript,
+          viewBuilder: () => const JsonFormatView(),
+        ),
+        FeatureItem(
+          2,
+          "JwtParse",
+          Icons.token,
+          viewBuilder: () => const JsonFormatView(),
+        ),
+        FeatureItem(
+          3,
+          "Json Diff",
+          Icons.code_off_outlined,
+          viewBuilder: () => TextDiffView(),
+        ),
+        FeatureItem(
+          4,
+          "Text Diff",
+          Icons.difference,
+          viewBuilder: () => TextDiffView(),
+        ),
+        FeatureItem(
+          5,
+          "TimeUtils",
+          Icons.timer,
+          viewBuilder: () => const JsonFormatView(),
+        ),
+      ],
+      "App Icon": [
+        FeatureItem(
+          6,
+          "MacLogo",
+          Icons.apple,
+          viewBuilder: () => AppIconEditorPage(),
+        ),
+        FeatureItem(
+          7,
+          "iOSLogo",
+          Icons.phone_iphone,
+          viewBuilder: () => IconGeneratorPage(),
+        ),
+        FeatureItem(
+          8,
+          "AndroidLogo",
+          Icons.android,
+          viewBuilder: () => IconGeneratorPage(),
+        ),
+      ]
+    };
+  }
 
   static const routeName = '/';
 
-  final List<SampleItem> items;
-
   @override
   Widget build(BuildContext context) {
-    final category1 = items.where((item) => item.id <= 5).toList();
-    final category2 = items.where((item) => item.id > 5).toList();
+    final categories = ["Encode", "App Icon"];
 
     return Scaffold(
       appBar: AppBar(
@@ -48,32 +93,28 @@ class SampleItemListView extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child:
-                  Text('Encode', style: Theme.of(context).textTheme.titleLarge),
-            ),
-            _buildAdaptiveGrid(context, category1),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text('App Icon',
-                  style: Theme.of(context).textTheme.titleLarge),
-            ),
-            _buildAdaptiveGrid(context, category2),
-          ],
+          children: categories
+              .expand((category) => [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(category,
+                          style: Theme.of(context).textTheme.titleLarge),
+                    ),
+                    _buildAdaptiveGrid(context, items[category] ?? []),
+                  ])
+              .toList(),
         ),
       ),
     );
   }
 
   Widget _buildAdaptiveGrid(
-      BuildContext context, List<SampleItem> categoryItems) {
+      BuildContext context, List<FeatureItem> categoryItems) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double itemWidth = constraints.maxWidth / 3;
+        final double itemWidth = constraints.maxWidth / 5;
         final double aspectRatio = 3 / 2;
-        final int crossAxisCount = 3;
+        final int crossAxisCount = 5;
 
         return GridView.count(
           shrinkWrap: true,
@@ -88,7 +129,7 @@ class SampleItemListView extends StatelessWidget {
     );
   }
 
-  Widget _buildGridItem(BuildContext context, SampleItem item) {
+  Widget _buildGridItem(BuildContext context, FeatureItem item) {
     return Card(
       margin: EdgeInsets.all(8),
       child: InkWell(
@@ -98,13 +139,13 @@ class SampleItemListView extends StatelessWidget {
           children: [
             Icon(
               item.icon, // Use default icon if item.icon is null
-              size: 48.0, // Adjust size as needed
+              size: 32.0, // Adjust size as needed
             ),
             const SizedBox(height: 8),
             Text(
               item.name,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ],
         ),
@@ -112,38 +153,10 @@ class SampleItemListView extends StatelessWidget {
     );
   }
 
-  void _navigateToItemView(BuildContext context, SampleItem item) {
-    switch (item.id) {
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const JsonFormatView()),
-        );
-        break;
-      case 3:
-      case 4:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => TextDiffView()),
-        );
-        break;
-      case 6:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AppIconEditorPage()),
-        );
-        break;
-      case 7:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => IconGeneratorPage()),
-        );
-        break;
-      default:
-        Navigator.restorablePushNamed(
-          context,
-          SampleItemDetailsView.routeName,
-        );
-    }
+  void _navigateToItemView(BuildContext context, FeatureItem item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => item.viewBuilder()),
+    );
   }
 }
