@@ -116,11 +116,19 @@ class _iOSAppIconEditorPageState extends State<IOSAppIconEditorPage> {
         _previewImages = {};
       });
 
+      int index = 1;
+      double lastSize = 0;
       for (double size in sizeList) {
-        final resizedImage =
-            await _resizeImage(result, size.toInt(), size.toInt());
+        if (size == lastSize) {
+          index++;
+        } else if (size != lastSize) {
+          index = 1;
+        }
+        lastSize = size;
+        final resizedImage = await _resizeImage(
+            result, size.toInt() * index, size.toInt() * index);
         setState(() {
-          _previewImages[size.toInt()] = resizedImage;
+          _previewImages[size.toInt() * index] = resizedImage;
         });
       }
     }
@@ -457,14 +465,14 @@ class _iOSAppIconEditorPageState extends State<IOSAppIconEditorPage> {
     int index = 1;
     double lastSize = 0;
     for (var size in sizeList) {
+      if (size == lastSize) {
+        index++;
+      } else if (size != lastSize) {
+        index = 1;
+      }
+      lastSize = size;
       for (var entry in _previewImages.entries) {
-        if (entry.key == size.toInt()) {
-          if (size == lastSize) {
-            index++;
-          } else if (size != lastSize) {
-            index = 1;
-          }
-          lastSize = size;
+        if (entry.key == size.toInt() * index) {
           File file = File(
               '$selectedDirectory/$fileName-${size}x${size}@${index}x.png');
           if (size == size.toInt()) {
