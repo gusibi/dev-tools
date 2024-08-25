@@ -6,6 +6,7 @@ import 'sample_item.dart';
 import '../features/json_format/json_format_view.dart';
 import '../features/diff/text_diff_view.dart';
 import '../features/app_icon/app_icon_view.dart';
+import '../features/app_icon/app_icon_ios_view.dart';
 import '../features/app_icon/app_icon_pro_view.dart';
 
 class SampleItemListView extends StatelessWidget {
@@ -60,7 +61,7 @@ class SampleItemListView extends StatelessWidget {
           7,
           "iOSLogo",
           Icons.phone_iphone,
-          viewBuilder: () => IconGeneratorPage(),
+          viewBuilder: () => IOSAppIconEditorPage(),
         ),
         FeatureItem(
           8,
